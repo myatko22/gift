@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>forumama💕</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        body {
+            background-color: #050002;
+            color: #ff3366;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            user-select: none;
+        }
+
+        /* Terminal Screen */
+        .terminal {
+            width: 85%;
+            max-width: 550px;
+            padding: 30px;
+            background: rgba(15, 5, 8, 0.95);
+            border: 1px solid #ff3366;
+            box-shadow: 0 0 25px rgba(255, 51, 102, 0.3);
+            border-radius: 8px;
+            z-index: 10;
+        }
+
+        .line {
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            line-height: 1.5;
+        }
+
+        .system { color: #ff3366; }
+        .status { color: #00ff66; font-weight: bold; }
+        .info { color: #cccccc; }
+
+        .decrypt-btn {
+            background: transparent;
+            border: 1px solid #ff3366;
+            color: #ff3366;
+            padding: 12px 25px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 15px;
+            display: inline-block;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.2s ease;
+        }
+
+        .decrypt-btn:hover {
+            background: #ff3366;
+            color: #000;
+            box-shadow: 0 0 15px #ff3366;
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            background: #030001;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="terminal" id="terminal-box">
+        <div class="line"><span class="system">[system]</span> Searching for the love of my life...</div>
+        <div class="line"><span class="system">[status]</span> <span class="status">DETECTED</span></div>
+        <div class="line info">> Warning:This secret love letter is locked for "Sharon" ONLY.</div>
+        <button class="decrypt-btn" onclick="decryptMessage()">🌺ENTER OUR WORLD</button>
+    </div>
+
+    <canvas id="heartCanvas"></canvas>
+
+    <!-- နောက်ခံသီချင်းထည့်သွင်းရန် Audio Tag -->
+    <audio id="bgMusic" loop>
+        <source src="music.mp3" type="audio/mpeg">
+        <source src="music.mp3.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        function decryptMessage() {
+            // သီချင်းကို စတင်ဖွင့်ခြင်း
+            const music = document.getElementById('bgMusic');
+            music.play().catch(error => {
+                console.error("Audio play blocked: ", error);
+            });
+
+            document.getElementById('terminal-box').style.display = 'none';
+            const canvas = document.getElementById('heartCanvas');
+            canvas.style.display = 'block';
+            startHeartEffect(canvas);
+        }
+
+        function startHeartEffect(canvas) {
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const romanceWords = ["i love you", "MAMA", "love you", "Plz STAY WITH ME", "PLEASE", "STAY by my side", "mama", "YES!U", "STAY WITH ME"];
+            const particles = [];
+            const clickHearts = []; // ကလစ်နှိပ်ရင်ထွက်လာမယ့် အသည်းပုံလေးများ
+
+            // နှလုံးသားပုံစံ Formula
+            function getHeartPoint(t) {
+                const scale = Math.min(canvas.width, canvas.height) / 32; 
+                const x = 16 * Math.pow(Math.sin(t), 3);
+                const y = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
+                
+                return {
+                    x: canvas.width / 2 + x * scale,
+                    y: canvas.height / 2 - y * scale
+                };
+            }
+
+            // --- Particle Class (စာသားများအတွက်) ---
+            class Particle {
+                constructor(isHeartPart) {
+                    this.isHeartPart = isHeartPart;
+                    this.reset();
+                    this.y = Math.random() * canvas.height;
+                }
+
+                reset() {
+                    this.speed = Math.random() * 2 + 1.5;
+                    this.fontSize = Math.random() * 5 + 11;
+                    this.text = romanceWords[Math.floor(Math.random() * romanceWords.length)];
+                    this.opacity = Math.random() * 0.7 + 0.3;
+                    this.reachedTarget = false;
+
+                    if (this.isHeartPart) {
+                        const t = Math.random() * Math.PI * 2;
+                        const point = getHeartPoint(t);
+                        this.x = point.x + (Math.random() - 0.5) * 30; 
+                        this.targetY = point.y;
+                        this.y = -30;
+                    } else {
+                        this.x = Math.random() * canvas.width;
+                        while (Math.abs(this.x - canvas.width/2) < 180) {
+                            this.x = Math.random() * canvas.width;
+                        }
+                        this.y = -50;
+                        this.targetY = canvas.height + 50;
+                    }
+                }
+
+                update() {
+                    if (this.isHeartPart) {
+                        if (!this.reachedTarget) {
+                            this.y += this.speed;
+                            if (this.y >= this.targetY) {
+                                this.reachedTarget = true;
+                            }
+                        } else {
+                            // နှလုံးသားပုံစံနေရာရောက်ရင် အောက်ဘက်သို့ ဖြည်းဖြည်းချင်း မျောကျစီးဆင်းသွားစေခြင်း
+                            this.y += 0.35; 
+                            // မျဉ်းကြောင်းအောက် 50px ကျော်သွားရင် အပေါ်ကနေ ပြန်ကျလာစေရန် Reset လုပ်ခြင်း
+                            if (this.y > this.targetY + 50) { 
+                                this.reset();
+                            }
+                        }
+                    } else {
+                        this.y += this.speed;
+                        if (this.y > canvas.height) {
+                            this.reset();
+                        }
+                    }
+                }
+
+                draw() {
+                    ctx.save();
+                    if (this.isHeartPart) {
+                        ctx.shadowColor = '#ff3366';
+                        ctx.shadowBlur = 8;
+                        ctx.fillStyle = `rgba(255, 51, 102, ${this.opacity + 0.2})`;
+                        ctx.font = `bold ${this.fontSize + 2}px 'Courier New'`;
+                    } else {
+                        ctx.fillStyle = `rgba(255, 51, 102, ${this.opacity * 0.4})`;
+                        ctx.font = `${this.fontSize}px 'Courier New'`;
+                    }
+                    ctx.fillText(this.text, this.x - ctx.measureText(this.text).width / 2, this.y);
+                    ctx.restore();
+                }
+            }
+
+            // --- TinyHeart Class (Click နှိပ်ရင် ပွင့်ထွက်လာမည့် အသည်းပုံလေးများ) ---
+            class TinyHeart {
+                constructor(x, y) {
+                    this.x = x;
+                    this.y = y;
+                    this.size = Math.random() * 8 + 6; 
+                    this.speedX = (Math.random() - 0.5) * 6; 
+                    this.speedY = (Math.random() - 0.5) * 6 - 2; 
+                    this.rotation = Math.random() * Math.PI * 2;
+                    this.rotationSpeed = (Math.random() - 0.5) * 0.05;
+                    this.opacity = 1;
+                    this.color = Math.random() > 0.5 ? '#ff3366' : '#ff6699'; 
+                }
+
+                update() {
+                    this.x += this.speedX;
+                    this.y += this.speedY;
+                    this.rotation += this.rotationSpeed;
+                    this.opacity -= 0.015; 
+                }
+
+                draw() {
+                    ctx.save();
+                    ctx.translate(this.x, this.y);
+                    ctx.rotate(this.rotation);
+                    ctx.fillStyle = this.color;
+                    ctx.globalAlpha = this.opacity;
+                    ctx.shadowColor = '#ff3366';
+                    ctx.shadowBlur = 6;
+
+                    ctx.beginPath();
+                    ctx.moveTo(0, -this.size / 4);
+                    ctx.bezierCurveTo(
+                        -this.size / 2, -this.size * 0.7, 
+                        -this.size, -this.size / 3, 
+                        0, this.size * 0.7
+                    );
+                    ctx.bezierCurveTo(
+                        this.size, -this.size / 3, 
+                        this.size / 2, -this.size * 0.7, 
+                        0, -this.size / 4
+                    );
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.restore();
+                }
+            }
+
+            // နှလုံးသားစာသားများ ထည့်သွင်းခြင်း
+            for (let i = 0; i < 300; i++) {
+                particles.push(new Particle(true));
+            }
+
+            // ဘေးဘက်စာသားများ ထည့်သွင်းခြင်း
+            for (let i = 0; i < 220; i++) {
+                particles.push(new Particle(false));
+            }
+
+            // --- ကလစ်နှိပ်သည့်အခါ အသည်းလေးများ ပွင့်ထွက်စေခြင်း ---
+            window.addEventListener('click', (e) => {
+                if (canvas.style.display === 'block') {
+                    for (let i = 0; i < 25; i++) {
+                        clickHearts.push(new TinyHeart(e.clientX, e.clientY));
+                    }
+                }
+            });
+
+            function animate() {
+                // background opacity ကို 0.35 ထားပြီး အဝါးသက်ရောက်မှုကို သဘာဝကျကျ လျှော့ချထားပါတယ်
+                ctx.fillStyle = 'rgba(5, 0, 2, 0.35)'; 
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // စာသားများဆွဲခြင်း
+                particles.forEach(p => {
+                    p.update();
+                    p.draw();
+                });
+
+                // ကလစ်နှိပ်လို့ပေါ်လာတဲ့ အသည်းလေးများဆွဲခြင်း
+                for (let i = clickHearts.length - 1; i >= 0; i--) {
+                    const heart = clickHearts[i];
+                    heart.update();
+                    heart.draw();
+                    if (heart.opacity <= 0) {
+                        clickHearts.splice(i, 1);
+                    }
+                }
+
+                requestAnimationFrame(animate);
+            }
+
+            animate();
+
+            window.addEventListener('resize', () => {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            });
+        }
+    </script>
+</body>
+</html>
